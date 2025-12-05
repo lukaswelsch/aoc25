@@ -7,7 +7,7 @@ idranges AS (
         CAST(string_split(split, '-')[1] AS BIGINT) AS productID_start,
         CAST(string_split(split, '-')[2] AS BIGINT) AS productID_end
     FROM data
-    WHERE productId_end is not null
+    WHERE split like '%-%'
 ),
 idsToCheck AS (
     SELECT CAST(split AS BIGINT) as productIdToCheck
@@ -26,7 +26,7 @@ intervals AS (
     SELECT
         productID_start,
         productID_end,
-        productID_start <= LAG(productID_end) OVER (ORDER BY productID_start) AS grp
+        productID_start <= LAG(productID_end) OVER (ORDER BY productID_start, productID_end) AS grp
     FROM idranges
 ),
 sum_ordered AS (
@@ -47,6 +47,9 @@ intermediate_ranges AS (
         MAX(productID_end) + 1 as max_start
     FROM sum_ordered
     GROUP BY grp
-)
-SELECT SUM(max_start - min_start) AS part2 FROM intermediate_ranges
+),
+temp AS (SELECT max_start - min_start as s
+             FROM intermediate_ranges)
+SELECT SUM(s) from temp
+--SELECT * FROM idranges
 --SELECT * FROM sum_ordered
