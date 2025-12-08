@@ -4,8 +4,8 @@ WITH data AS (
 ),
 idranges AS (
     SELECT
-        CAST(string_split(split, '-')[1] AS BIGINT) AS productID_start,
-        CAST(string_split(split, '-')[2] AS BIGINT) AS productID_end
+        CAST(string_split(split, '-')[1] AS HUGEINT) AS productID_start,
+        CAST(string_split(split, '-')[2] AS HUGEINT) AS productID_end
     FROM data
     WHERE split like '%-%'
 ),
@@ -37,7 +37,7 @@ sum_ordered AS (
         SUM(CASE WHEN grp
             THEN 0
             ELSE 1
-        END) OVER (ORDER BY productID_start) AS grp
+        END) OVER (ORDER BY productID_start, productID_end) AS grp
     FROM intervals
 ),
 intermediate_ranges AS (
@@ -48,8 +48,27 @@ intermediate_ranges AS (
     FROM sum_ordered
     GROUP BY grp
 ),
-temp AS (SELECT max_start - min_start as s
-             FROM intermediate_ranges)
-SELECT SUM(s) from temp
---SELECT * FROM idranges
---SELECT * FROM sum_ordered
+temp AS (
+    SELECT max_start - min_start as s
+    FROM intermediate_ranges
+),
+doublecounted AS (
+    -- falls end = start dann müssten eigentlich beide in einer gruppe sein,
+    -- würde durch das max + 1 das doppelt gezählt werden
+    SELECT -COUNT(*) AS s
+    from sum_ordered a
+    JOIN sum_ordered b
+    ON a.productID_end = b.productID_start
+    AND a.grp != b.grp
+)
+SELECT SUM(s) as result, 'part2' as challenge
+FROM (
+    SELECT s
+    FROM temp
+    UNION ALL
+    SELECT * FROM doublecounted
+ )
+UNION ALL
+SELECT COUNT(*), 'part1'
+FROM part1
+ORDER BY challenge

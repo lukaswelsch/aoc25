@@ -113,5 +113,8 @@ final_removed AS (
     FROM remove_rolls
     WHERE cell = 'X'
     GROUP BY x, y
+),
+part1 AS (
+    SELECT COUNT(*) FROM combinations WHERE at_neighbor_count < 4
 )
 SELECT count(*) FROM final_removed
