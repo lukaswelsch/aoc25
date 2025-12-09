@@ -1,6 +1,6 @@
 WITH points AS (
     SELECT column0 as x, column1 as y, column2 as z, ROW_NUMBER() OVER() as rowid
-    FROM read_csv_auto('08/input.csv', header = false, delim=',')
+    FROM read_csv_auto('08/example.csv', header = false, delim=',')
 ),
 all_edges AS (
     SELECT
@@ -9,15 +9,15 @@ all_edges AS (
         (a.x - b.x)*(a.x - b.x)
       + (a.y - b.y)*(a.y - b.y)
       + (a.z - b.z)*(a.z - b.z) AS dist2
-           --,a.x, a.y, a.z, b.x, b.y, b.z
+           ,a.x, a.y, a.z, b.x, b.y, b.z
     FROM points a
     JOIN points b ON a.rowid < b.rowid
 ),
 directed_edges AS (
-    SELECT dst, src
+    SELECT dst, src, x, y, z, x_1, y_2, z_3
     FROM all_edges
     ORDER BY dist2
-    LIMIT 1000
+    LIMIT 10
 ),
 edges AS (
     SELECT dst, src FROM directed_edges
@@ -61,5 +61,7 @@ top_3_components AS(
     ORDER BY COUNT(component) DESC
     LIMIT 3
 )
-SELECT CAST(exp(sum(ln (number))) AS BIGINT)
-FROM top_3_components;
+SELECT *
+FROM weakly_components w
+JOIN points p ON w.node = p.rowid
+
