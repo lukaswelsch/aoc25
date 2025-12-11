@@ -8,9 +8,7 @@ nodes AS (
 ),
 bfs AS (
 	WITH RECURSIVE walks(node, path) AS (
-		SELECT node, ARRAY[node] AS path
-		FROM nodes
-		WHERE node='you'
+		SELECT 'you', ARRAY['you'] AS path
 		UNION
 		SELECT e.dst as node, list_append(path, e.dst) as path
 		FROM walks
