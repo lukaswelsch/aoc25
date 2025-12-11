@@ -9,7 +9,7 @@ nodes AS (
 bfs AS (
 	WITH RECURSIVE walks(node, path) AS (
 		SELECT 'you', ARRAY['you'] AS path
-		UNION
+		UNION ALL
 		SELECT e.dst as node, list_append(path, e.dst) as path
 		FROM walks
 		JOIN edges e ON walks.node = e.src
