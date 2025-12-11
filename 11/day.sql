@@ -1,6 +1,6 @@
 WITH edges AS (
     SELECT string_split(column0, ': ')[1] as src, regexp_split_to_table(string_split(column0, ': ')[2], ' ') as dst
-    FROM read_csv_auto('11/example2.csv', header = false)
+    FROM read_csv_auto('11/input.csv', header = false)
 ),
 nodes AS (
 	SELECT DISTINCT src as node
@@ -15,11 +15,9 @@ bfs AS (
 		SELECT e.dst as node, list_append(path, e.dst) as path
 		FROM walks
 		JOIN edges e ON walks.node = e.src
-        WHERE e.dst <> ALL(path)
 	)
 	SELECT *
 	FROM walks
 	WHERE node='out'
-
 )
 SELECT COUNT(*) FROM bfs
